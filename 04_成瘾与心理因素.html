@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>04 成瘾与心理因素 — 短视频用户使用习惯分析</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:14px;line-height:1.6}
+  .page-wrap{max-width:1000px;margin:0 auto;padding:32px 24px}
+  .breadcrumb{font-size:12px;color:#999;margin-bottom:20px}
+  .breadcrumb a{color:#185FA5;text-decoration:none}
+  .section-badge{display:inline-flex;align-items:center;gap:8px;margin-bottom:16px}
+  .section-num{width:32px;height:32px;border-radius:50%;background:#FAECE7;color:#993C1D;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500}
+  .section-title{font-size:22px;font-weight:500;color:#1a1a1a;margin-bottom:6px}
+  .section-desc{font-size:13px;color:#888;margin-bottom:28px}
+  .scale-section{background:#fff;border:0.5px solid #e0ddd5;border-radius:12px;padding:20px;margin-bottom:20px}
+  .scale-section h3{font-size:13px;font-weight:500;color:#333;margin-bottom:4px}
+  .scale-desc{font-size:12px;color:#999;margin-bottom:16px}
+  .scale-bar{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+  .scale-label{font-size:12px;color:#444;width:130px;flex-shrink:0;text-align:right}
+  .scale-track{flex:1;height:22px;background:#f0efe8;border-radius:5px;overflow:hidden}
+  .scale-fill{height:100%;border-radius:5px;display:flex;align-items:center;padding-left:8px;font-size:11px;color:#fff;font-weight:500}
+  .scale-num{font-size:12px;color:#888;width:32px;flex-shrink:0}
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+  .chart-card{background:#fff;border:0.5px solid #e0ddd5;border-radius:12px;padding:20px}
+  .chart-title{font-size:13px;font-weight:500;margin-bottom:3px;color:#333}
+  .chart-subtitle{font-size:12px;color:#999;margin-bottom:14px}
+  .chart-wrap{position:relative}
+  .ttest-box{background:#fff;border:0.5px solid #e0ddd5;border-radius:12px;padding:20px;margin-bottom:20px}
+  .ttest-box h3{font-size:13px;font-weight:500;color:#333;margin-bottom:14px}
+  .ttest-compare{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-bottom:16px}
+  .ttest-side{border-radius:10px;padding:16px;text-align:center}
+  .ttest-side.male{background:#E6F1FB}
+  .ttest-side.female{background:#FAECE7}
+  .ttest-label{font-size:12px;color:#666;margin-bottom:4px}
+  .ttest-val{font-size:28px;font-weight:500}
+  .ttest-name{font-size:12px;color:#888;margin-top:2px}
+  .ttest-vs{text-align:center;font-size:13px;color:#aaa;font-weight:500}
+  .ttest-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .stat-item{background:#f5f5f0;border-radius:8px;padding:12px;text-align:center}
+  .stat-label{font-size:11px;color:#999;margin-bottom:4px}
+  .stat-val{font-size:16px;font-weight:500;color:#333}
+  .sig{color:#185FA5}
+  .insight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+  .insight-card{background:#fff;border-radius:10px;padding:16px;border:0.5px solid #e0ddd5;border-left:3px solid #993C1D}
+  .insight-card.blue{border-left-color:#185FA5}
+  .insight-card.green{border-left-color:#3B6D11}
+  .insight-label{font-size:11px;color:#999;font-weight:500;margin-bottom:4px}
+  .insight-val{font-size:22px;font-weight:500;color:#1a1a1a}
+  .insight-note{font-size:12px;color:#666;margin-top:5px;line-height:1.5}
+  .nav-footer{margin-top:32px;display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:0.5px solid #e0ddd5}
+  .nav-btn{background:#fff;border:0.5px solid #e0ddd5;border-radius:20px;padding:8px 18px;font-size:13px;color:#444;text-decoration:none}
+  .nav-btn:hover{border-color:#185FA5;color:#185FA5}
+  .nav-btn.next{background:#993C1D;color:#fff;border-color:#993C1D}
+  .nav-btn.next:hover{background:#7e3119}
+  @media(max-width:700px){.chart-grid,.insight-grid,.ttest-stats,.ttest-compare{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="breadcrumb">
+    <a href="短视频用户使用习惯分析报告.html">← 返回总报告</a> &nbsp;/&nbsp; 04 成瘾与心理因素
+  </div>
+
+  <div class="section-badge">
+    <div class="section-num">04</div>
+    <span style="font-size:12px;color:#993C1D;font-weight:500">成瘾与心理因素</span>
+  </div>
+  <div class="section-title">成瘾倾向与心理因素分析</div>
+  <div class="section-desc">成瘾量表各题项分析 · 性别差异独立样本t检验 · 使用时长与成瘾的相关性</div>
+
+  <!-- 成瘾量表各题 -->
+  <div class="scale-section">
+    <h3>成瘾量表各题均值（Q11–Q18）</h3>
+    <div class="scale-desc">量表范围 1=很不符合 ～ 5=很符合；整体均值 2.73</div>
+    <div class="scale-bar"><div class="scale-label">Q11 时间总比预期长</div><div class="scale-track"><div class="scale-fill" style="width:56.6%;background:#378ADD">2.83</div></div><div class="scale-num">2.83</div></div>
+    <div class="scale-bar"><div class="scale-label">Q12 感觉时间在加速</div><div class="scale-track"><div class="scale-fill" style="width:57.0%;background:#378ADD">2.85</div></div><div class="scale-num">2.85</div></div>
+    <div class="scale-bar"><div class="scale-label">Q13 刷短视频解压</div><div class="scale-track"><div class="scale-fill" style="width:55.8%;background:#7F77DD">2.79</div></div><div class="scale-num">2.79</div></div>
+    <div class="scale-bar"><div class="scale-label">Q14 想缓解焦虑时</div><div class="scale-track"><div class="scale-fill" style="width:55.6%;background:#7F77DD">2.78</div></div><div class="scale-num">2.78</div></div>
+    <div class="scale-bar"><div class="scale-label">Q15 无法刷时烦躁不安</div><div class="scale-track"><div class="scale-fill" style="width:53.6%;background:#D85A30">2.68</div></div><div class="scale-num">2.68</div></div>
+    <div class="scale-bar"><div class="scale-label">Q16 曾尝试减量但失败</div><div class="scale-track"><div class="scale-fill" style="width:52.4%;background:#D85A30">2.62</div></div><div class="scale-num">2.62</div></div>
+    <div class="scale-bar"><div class="scale-label">Q17 影响学习/工作成绩</div><div class="scale-track"><div class="scale-fill" style="width:55.0%;background:#BA7517">2.75</div></div><div class="scale-num">2.75</div></div>
+    <div class="scale-bar"><div class="scale-label">Q18 难以全神贯注</div><div class="scale-track"><div class="scale-fill" style="width:51.6%;background:#BA7517">2.58</div></div><div class="scale-num">2.58</div></div>
+  </div>
+
+  <!-- 图表区 -->
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">使用时长 × 成瘾/习得性无助</div>
+      <div class="chart-subtitle">随时长增加，成瘾与无助均呈显著上升趋势</div>
+      <div class="chart-wrap" style="height:240px">
+        <canvas id="durAddict"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">四大量表总体均值对比</div>
+      <div class="chart-subtitle">算法依赖3.62为最高，习得性无助2.66为最低</div>
+      <div class="chart-wrap" style="height:240px">
+        <canvas id="scaleBar"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- t检验 -->
+  <div class="ttest-box">
+    <h3>独立样本 t 检验 — 性别差异 × 成瘾指数</h3>
+    <div class="ttest-compare">
+      <div class="ttest-side male">
+        <div class="ttest-label">男性平均成瘾指数</div>
+        <div class="ttest-val" style="color:#185FA5">2.58</div>
+        <div class="ttest-name">113人</div>
+      </div>
+      <div class="ttest-vs">VS</div>
+      <div class="ttest-side female">
+        <div class="ttest-label">女性平均成瘾指数</div>
+        <div class="ttest-val" style="color:#993C1D">2.90</div>
+        <div class="ttest-name">103人</div>
+      </div>
+    </div>
+    <div class="ttest-stats">
+      <div class="stat-item">
+        <div class="stat-label">t 统计量</div>
+        <div class="stat-val">-2.306</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">p 值</div>
+        <div class="stat-val sig">0.022 ✓</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">显著性结论</div>
+        <div class="stat-val sig" style="font-size:13px">p &lt; 0.05，差异显著</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;font-size:13px;color:#555;padding:12px;background:#FAECE7;border-radius:8px;line-height:1.6">
+      <strong>结论：</strong>女性用户的短视频成瘾倾向显著高于男性（差值0.32，p=0.022）。
+      美妆/穿搭类内容对女性吸引力更强，可能是造成这一差异的内容因素之一。
+    </div>
+  </div>
+
+  <!-- 洞察 -->
+  <div class="insight-grid">
+    <div class="insight-card">
+      <div class="insight-label">整体成瘾均值</div>
+      <div class="insight-val">2.73 / 5</div>
+      <div class="insight-note">全体处于中低水平，但24.1%的重度群体成瘾指数高达3.92，需重点关注</div>
+    </div>
+    <div class="insight-card blue">
+      <div class="insight-label">算法依赖均值</div>
+      <div class="insight-val">3.62 / 5</div>
+      <div class="insight-note">受访者对算法推荐的依赖程度普遍偏高，信息茧房效应显著</div>
+    </div>
+    <div class="insight-card green">
+      <div class="insight-label">时长越长越成瘾</div>
+      <div class="insight-val">2.31 → 3.69</div>
+      <div class="insight-note">从半小时到3小时以上，成瘾指数从2.31跃升至3.69，2小时是明显转折点</div>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a href="03_用户分群分析.html" class="nav-btn">← 03 用户分群分析</a>
+    <a href="05_分析结论.html" class="nav-btn next">下一节：分析结论 →</a>
+  </div>
+
+</div>
+<script>
+const C = {blue:'#378ADD',purple:'#7F77DD',green:'#639922',coral:'#D85A30',amber:'#BA7517'};
+
+new Chart(document.getElementById('durAddict'),{
+  type:'line',
+  data:{
+    labels:['半小时以内','1-2小时','2-3小时','3小时以上'],
+    datasets:[
+      {label:'成瘾指数',data:[2.31,2.31,3.49,3.69],borderColor:C.coral,backgroundColor:C.coral+'22',tension:0.4,borderWidth:2.5,pointRadius:5,fill:true},
+      {label:'习得性无助',data:[2.26,2.20,3.48,3.61],borderColor:C.purple,backgroundColor:C.purple+'22',tension:0.4,borderWidth:2.5,pointRadius:5,fill:true}
+    ]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11},padding:12}}},
+    scales:{y:{beginAtZero:false,min:1.5,max:4.2,grid:{color:'#f0efe8'},ticks:{font:{size:11}}},
+            x:{grid:{display:false},ticks:{font:{size:11}}}}
+  }
+});
+
+new Chart(document.getElementById('scaleBar'),{
+  type:'bar',
+  data:{
+    labels:['成瘾指数','自控力','习得性无助','算法依赖'],
+    datasets:[{
+      data:[2.73,3.11,2.66,3.62],
+      backgroundColor:[C.coral,C.green,C.amber,C.blue],
+      borderRadius:6
+    }]
+  },
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' 均值 '+ctx.formattedValue+' / 5'}}},
+    scales:{
+      y:{beginAtZero:false,min:1,max:5,grid:{color:'#f0efe8'},ticks:{font:{size:11}}},
+      x:{grid:{display:false},ticks:{font:{size:12}}}
+    }
+  }
+});
+</script>
+</body>
+</html>

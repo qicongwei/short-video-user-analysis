@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>短视频 App 用户使用习惯分析报告</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:14px;line-height:1.6}
+  .page-wrap{max-width:1100px;margin:0 auto;padding:32px 24px}
+  
+  /* 封面 */
+  .cover{background:#fff;border-radius:16px;padding:48px 40px 40px;margin-bottom:24px;border:0.5px solid #e0ddd5;position:relative;overflow:hidden}
+  .cover-badge{display:inline-block;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;margin-bottom:16px}
+  .cover h1{font-size:26px;font-weight:500;color:#1a1a1a;line-height:1.3;margin-bottom:10px}
+  .cover-sub{font-size:14px;color:#888;margin-bottom:24px}
+  .cover-meta{display:flex;gap:24px;flex-wrap:wrap}
+  .cover-meta-item{background:#f5f5f0;border-radius:8px;padding:10px 16px}
+  .cover-meta-item .num{font-size:22px;font-weight:500;color:#185FA5}
+  .cover-meta-item .lbl{font-size:12px;color:#888;margin-top:2px}
+  .cover-stripe{position:absolute;right:0;top:0;width:200px;height:100%;background:linear-gradient(135deg,#E6F1FB 0%,#EEEDFE 100%);opacity:0.4;clip-path:polygon(60% 0,100% 0,100% 100%,0% 100%)}
+  
+  /* 导航 */
+  .nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+  .nav a{background:#fff;border:0.5px solid #e0ddd5;border-radius:20px;padding:6px 16px;font-size:13px;color:#444;text-decoration:none;cursor:pointer}
+  .nav a:hover{border-color:#185FA5;color:#185FA5}
+  
+  /* 区块 */
+  .section{background:#fff;border-radius:16px;border:0.5px solid #e0ddd5;padding:28px 32px;margin-bottom:20px}
+  .section-header{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:14px;border-bottom:0.5px solid #eeede8}
+  .section-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+  .n-blue{background:#E6F1FB;color:#185FA5}
+  .n-purple{background:#EEEDFE;color:#534AB7}
+  .n-green{background:#EAF3DE;color:#3B6D11}
+  .n-coral{background:#FAECE7;color:#993C1D}
+  .section-title{font-size:17px;font-weight:500}
+  .section-desc{font-size:13px;color:#888;margin-top:2px}
+  
+  /* 图表网格 */
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .chart-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+  .chart-card{background:#fafaf8;border:0.5px solid #e8e6de;border-radius:10px;padding:16px}
+  .chart-card.full{grid-column:1/-1}
+  .chart-title{font-size:13px;font-weight:500;margin-bottom:4px;color:#333}
+  .chart-subtitle{font-size:12px;color:#999;margin-bottom:12px}
+  .chart-wrap{position:relative}
+  
+  /* 洞察卡片 */
+  .insight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  .insight-card{background:#fafaf8;border-radius:10px;padding:14px 16px;border-left:3px solid}
+  .insight-card.blue{border-color:#185FA5}
+  .insight-card.purple{border-color:#534AB7}
+  .insight-card.green{border-color:#3B6D11}
+  .insight-card.coral{border-color:#993C1D}
+  .insight-card.amber{border-color:#854F0B}
+  .insight-label{font-size:11px;color:#999;font-weight:500;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px}
+  .insight-val{font-size:20px;font-weight:500;color:#1a1a1a}
+  .insight-note{font-size:12px;color:#666;margin-top:4px;line-height:1.5}
+  
+  /* 聚类卡片 */
+  .cluster-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+  .cluster-card{border-radius:10px;padding:16px;border:0.5px solid}
+  .cluster-card.c0{background:#E6F1FB;border-color:#B5D4F4}
+  .cluster-card.c1{background:#EAF3DE;border-color:#C0DD97}
+  .cluster-card.c2{background:#FAECE7;border-color:#F5C4B3}
+  .cluster-tag{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:12px;margin-bottom:8px}
+  .ct0{background:#185FA5;color:#fff}
+  .ct1{background:#3B6D11;color:#fff}
+  .ct2{background:#993C1D;color:#fff}
+  .cluster-name{font-size:15px;font-weight:500;margin-bottom:4px}
+  .cluster-count{font-size:12px;color:#666;margin-bottom:10px}
+  .cluster-metrics div{font-size:12px;padding:2px 0;color:#444;display:flex;justify-content:space-between}
+  .cluster-metrics span{font-weight:500}
+  
+  /* 量表热图 */
+  .scale-bar{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .scale-label{font-size:12px;color:#444;width:120px;flex-shrink:0;text-align:right}
+  .scale-track{flex:1;height:20px;background:#f0efe8;border-radius:4px;overflow:hidden}
+  .scale-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:6px;font-size:11px;color:#fff;font-weight:500;transition:width 0.3s}
+  .scale-num{font-size:12px;color:#888;width:28px;flex-shrink:0}
+  
+  /* t检验结果 */
+  .test-result{background:#fafaf8;border-radius:10px;padding:16px;margin-top:16px}
+  .test-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid #eeede8;font-size:13px}
+  .test-row:last-child{border:none}
+  .sig{color:#185FA5;font-weight:500}
+  .insig{color:#888}
+  
+  /* 结论区 */
+  .conclusion{background:linear-gradient(135deg,#E6F1FB,#EEEDFE);border-radius:16px;padding:28px 32px;margin-top:20px}
+  .conclusion h2{font-size:16px;font-weight:500;margin-bottom:16px;color:#1a1a1a}
+  .conclusion-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .conclusion-item{background:#fff;border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;color:#333}
+  .conclusion-item strong{display:block;color:#185FA5;margin-bottom:3px;font-size:12px}
+  
+  /* 响应式 */
+  @media(max-width:700px){
+    .chart-grid,.chart-grid-3,.cluster-grid,.insight-grid,.conclusion-list{grid-template-columns:1fr}
+    .cover-meta{flex-direction:column}
+    .chart-card.full{grid-column:auto}
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- 封面 -->
+  <div class="cover" id="top">
+    <div class="cover-stripe"></div>
+    <div class="cover-badge">数据挖掘课程作品</div>
+    <h1>短视频 App 用户使用习惯分析报告</h1>
+    <p class="cover-sub">基于 216 份有效问卷的多维度数据挖掘研究 · 2026年6月</p>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><div class="num">216</div><div class="lbl">有效答卷</div></div>
+      <div class="cover-meta-item"><div class="num">54</div><div class="lbl">变量字段</div></div>
+      <div class="cover-meta-item"><div class="num">3</div><div class="lbl">用户群体</div></div>
+      <div class="cover-meta-item"><div class="num">4</div><div class="lbl">分析维度</div></div>
+    </div>
+  </div>
+
+  <!-- 导航 -->
+  <div class="nav">
+    <a href="#sec1">01 用户基础画像</a>
+    <a href="#sec2">02 内容偏好与行为</a>
+    <a href="#sec3">03 用户分群分析</a>
+    <a href="#sec4">04 成瘾与心理因素</a>
+    <a href="#sec5">05 分析结论</a>
+  </div>
+
+  <!-- Section 1: 用户基础画像 -->
+  <div class="section" id="sec1">
+    <div class="section-header">
+      <div class="section-num n-blue">01</div>
+      <div>
+        <div class="section-title">用户基础画像</div>
+        <div class="section-desc">受访者的人口统计特征与使用时长分布</div>
+      </div>
+    </div>
+    
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">性别分布</div>
+        <div class="chart-subtitle">n=216，男女比例基本均衡</div>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="genderChart" role="img" aria-label="性别分布饼图">性别分布：男113人，女103人</canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">年龄分布</div>
+        <div class="chart-subtitle">18-22岁青年群体占比最高</div>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="ageChart" role="img" aria-label="年龄分布柱状图">18岁以下13人，18-22岁59人，23-30岁50人，31-40岁51人，41岁以上43人</canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">职业构成</div>
+        <div class="chart-subtitle">上班族为主体，占比58%</div>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="jobChart" role="img" aria-label="职业构成饼图">上班族126人，自由职业者47人，在校学生43人</canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">日均使用时长</div>
+        <div class="chart-subtitle">1-2小时是最普遍的使用时长</div>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="durChart" role="img" aria-label="日均使用时长分布">半小时以内50人，1-2小时93人，2-3小时45人，3小时以上28人</canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-grid" style="margin-top:16px">
+      <div class="insight-card blue">
+        <div class="insight-label">主力用户年龄</div>
+        <div class="insight-val">18-40岁</div>
+        <div class="insight-note">三个年龄段（18-22、23-30、31-40）合计占 74.1%，是短视频核心用户圈</div>
+      </div>
+      <div class="insight-card green">
+        <div class="insight-label">每日1小时以上</div>
+        <div class="insight-val">76.8%</div>
+        <div class="insight-note">1-2小时（43.1%）+ 2-3小时（20.8%）+ 3小时以上（13.0%）</div>
+      </div>
+      <div class="insight-card coral">
+        <div class="insight-label">重度用户（3h+）</div>
+        <div class="insight-val">28人 / 13%</div>
+        <div class="insight-note">该群体成瘾指数显著高于其他群体（均值3.69 vs 全体2.73）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: 内容偏好与行为 -->
+  <div class="section" id="sec2">
+    <div class="section-header">
+      <div class="section-num n-purple">02</div>
+      <div>
+        <div class="section-title">内容偏好与行为分析</div>
+        <div class="section-desc">使用目的、内容偏好、互动行为及使用场景</div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card full">
+        <div class="chart-title">使用目的分布（多选题，n=216）</div>
+        <div class="chart-subtitle">休闲娱乐与获取资讯并列为最主要目的</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="purposeChart" role="img" aria-label="使用目的分布横向柱状图">获取资讯123人最多</canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">内容偏好类型（多选）</div>
+        <div class="chart-subtitle">美妆/穿搭类居首，影视内容紧随</div>
+        <div class="chart-wrap" style="height:240px">
+          <canvas id="contentChart" role="img" aria-label="内容偏好条形图">美美类75票最多</canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">使用场景（多选）</div>
+        <div class="chart-subtitle">居家/宿舍是最主要的使用场景</div>
+        <div class="chart-wrap" style="height:240px">
+          <canvas id="sceneChart" role="img" aria-label="使用场景条形图">居家98票最多</canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">互动行为分布（多选）</div>
+        <div class="chart-subtitle">购买商品是最常见互动，看直播占比高</div>
+        <div class="chart-wrap" style="height:240px">
+          <canvas id="interactChart" role="img" aria-label="互动行为分布图">购买商品79票最多</canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-grid" style="margin-top:16px">
+      <div class="insight-card purple">
+        <div class="insight-label">抖音渗透率</div>
+        <div class="insight-val">近乎全覆盖</div>
+        <div class="insight-note">绝大多数受访者都使用抖音，多平台并用比例高（抖+快+小红书组合最多，47人）</div>
+      </div>
+      <div class="insight-card amber">
+        <div class="insight-label">电商转化显著</div>
+        <div class="insight-val">36.6%</div>
+        <div class="insight-note">79人表示最常互动行为是"购买商品"，远超点赞、评论等传统互动</div>
+      </div>
+      <div class="insight-card blue">
+        <div class="insight-label">睡前使用场景</div>
+        <div class="insight-val">68人 / 31.5%</div>
+        <div class="insight-note">睡前刷短视频是第二大场景，与熬夜指标高度相关</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: 用户分群 -->
+  <div class="section" id="sec3">
+    <div class="section-header">
+      <div class="section-num n-green">03</div>
+      <div>
+        <div class="section-title">用户分群分析（K-Means 聚类）</div>
+        <div class="section-desc">基于使用时长、成瘾程度、自控力、习得性无助、算法依赖5个维度进行聚类</div>
+      </div>
+    </div>
+
+    <div class="cluster-grid">
+      <div class="cluster-card c1">
+        <span class="cluster-tag ct1">群体 A</span>
+        <div class="cluster-name">轻度理性用户</div>
+        <div class="cluster-count">114人 · 占比 52.8%（最大群体）</div>
+        <div class="cluster-metrics">
+          <div>使用时长 <span>短（均值1.79）</span></div>
+          <div>成瘾指数 <span>低（1.84）</span></div>
+          <div>自控力 <span>中等（3.05）</span></div>
+          <div>算法依赖 <span>高（4.08）</span></div>
+        </div>
+      </div>
+      <div class="cluster-card c0">
+        <span class="cluster-tag ct0">群体 B</span>
+        <div class="cluster-name">中度依赖用户</div>
+        <div class="cluster-count">50人 · 占比 23.1%</div>
+        <div class="cluster-metrics">
+          <div>使用时长 <span>中（均值2.32）</span></div>
+          <div>成瘾指数 <span>中高（3.54）</span></div>
+          <div>自控力 <span>较高（3.56）</span></div>
+          <div>算法依赖 <span>高（3.72）</span></div>
+        </div>
+      </div>
+      <div class="cluster-card c2">
+        <span class="cluster-tag ct2">群体 C</span>
+        <div class="cluster-name">重度成瘾高风险</div>
+        <div class="cluster-count">52人 · 占比 24.1%</div>
+        <div class="cluster-metrics">
+          <div>使用时长 <span>长（均值3.13）</span></div>
+          <div>成瘾指数 <span>高（3.92）</span></div>
+          <div>自控力 <span>低（2.79）</span></div>
+          <div>习得性无助 <span>高（3.91）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">PCA 二维散点图（聚类可视化）</div>
+        <div class="chart-subtitle">PC1解释55.2%方差，PC2解释20.6%方差</div>
+        <div class="chart-wrap" style="height:280px">
+          <canvas id="pcaChart" role="img" aria-label="K-Means聚类PCA降维散点图">三个用户群体在二维空间中的分布</canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">三群体关键维度对比</div>
+        <div class="chart-subtitle">雷达图展示各群体特征差异</div>
+        <div class="chart-wrap" style="height:280px">
+          <canvas id="radarChart" role="img" aria-label="三群体特征雷达图">各群体在5个维度的均值比较</canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: 成瘾与心理 -->
+  <div class="section" id="sec4">
+    <div class="section-header">
+      <div class="section-num n-coral">04</div>
+      <div>
+        <div class="section-title">成瘾倾向与心理因素分析</div>
+        <div class="section-desc">成瘾量表各题均值 · 性别差异检验 · 使用时长与成瘾相关性</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:13px;font-weight:500;margin-bottom:12px;color:#333">成瘾量表各题均值（1=很不符合，5=很符合）</div>
+      <div class="scale-bar"><div class="scale-label">Q11 时间超预期</div><div class="scale-track"><div class="scale-fill" style="width:56.6%;background:#378ADD">2.83</div></div><div class="scale-num">2.83</div></div>
+      <div class="scale-bar"><div class="scale-label">Q12 感觉时间加速</div><div class="scale-track"><div class="scale-fill" style="width:57.0%;background:#378ADD">2.85</div></div><div class="scale-num">2.85</div></div>
+      <div class="scale-bar"><div class="scale-label">Q13 刷短视频解压</div><div class="scale-track"><div class="scale-fill" style="width:55.8%;background:#7F77DD">2.79</div></div><div class="scale-num">2.79</div></div>
+      <div class="scale-bar"><div class="scale-label">Q14 缓解焦虑</div><div class="scale-track"><div class="scale-fill" style="width:55.6%;background:#7F77DD">2.78</div></div><div class="scale-num">2.78</div></div>
+      <div class="scale-bar"><div class="scale-label">Q15 不刷烦躁不安</div><div class="scale-track"><div class="scale-fill" style="width:53.6%;background:#D85A30">2.68</div></div><div class="scale-num">2.68</div></div>
+      <div class="scale-bar"><div class="scale-label">Q16 减量尝试失败</div><div class="scale-track"><div class="scale-fill" style="width:52.4%;background:#D85A30">2.62</div></div><div class="scale-num">2.62</div></div>
+      <div class="scale-bar"><div class="scale-label">Q17 影响学习/工作</div><div class="scale-track"><div class="scale-fill" style="width:55.0%;background:#BA7517">2.75</div></div><div class="scale-num">2.75</div></div>
+      <div class="scale-bar"><div class="scale-label">Q18 难以全神贯注</div><div class="scale-track"><div class="scale-fill" style="width:51.6%;background:#BA7517">2.58</div></div><div class="scale-num">2.58</div></div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">使用时长 × 成瘾/无助指数</div>
+        <div class="chart-subtitle">随时长增加，成瘾与习得性无助均显著上升</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="durAddict" role="img" aria-label="使用时长与成瘾指数折线图">使用时长越长，成瘾指数越高</canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">四大量表总体均值对比</div>
+        <div class="chart-subtitle">全体受访者各心理维度平均得分</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="scaleBar" role="img" aria-label="四大量表均值条形图">成瘾2.73，自控力3.11，无助2.66，算法依赖3.62</canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-result">
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px;color:#333">独立样本 t 检验 — 性别 × 成瘾指数</div>
+      <div class="test-row">
+        <span>男性成瘾均值</span>
+        <span>2.58</span>
+      </div>
+      <div class="test-row">
+        <span>女性成瘾均值</span>
+        <span>2.90</span>
+      </div>
+      <div class="test-row">
+        <span>t 统计量</span>
+        <span>-2.306</span>
+      </div>
+      <div class="test-row">
+        <span>p 值</span>
+        <span class="sig">0.022（显著，p &lt; 0.05）</span>
+      </div>
+      <div class="test-row">
+        <span>结论</span>
+        <span class="sig">女性用户的短视频成瘾倾向显著高于男性</span>
+      </div>
+    </div>
+
+    <div class="insight-grid" style="margin-top:16px">
+      <div class="insight-card coral">
+        <div class="insight-label">整体成瘾均值</div>
+        <div class="insight-val">2.73 / 5</div>
+        <div class="insight-note">全体受访者成瘾程度处于中低水平，但24.1%的重度群体需关注</div>
+      </div>
+      <div class="insight-card blue">
+        <div class="insight-label">算法依赖均值</div>
+        <div class="insight-val">3.62 / 5</div>
+        <div class="insight-note">受访者对算法推荐的依赖程度普遍偏高，主动搜索行为较少</div>
+      </div>
+      <div class="insight-card green">
+        <div class="insight-label">自控力均值</div>
+        <div class="insight-val">3.11 / 5</div>
+        <div class="insight-note">整体自控力处于中等偏上水平，但重度群体（C类）自控力仅2.79</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: 结论 -->
+  <div class="conclusion" id="sec5">
+    <h2>分析结论与建议</h2>
+    <div class="conclusion-list">
+      <div class="conclusion-item">
+        <strong>核心发现 01 · 用户群体分层明显</strong>
+        216名用户被自然划分为三类：约53%为轻度理性用户，约24%为重度成瘾高风险群体，后者时长超3小时/天、成瘾指数3.92，需重点关注。
+      </div>
+      <div class="conclusion-item">
+        <strong>核心发现 02 · 女性成瘾倾向更高</strong>
+        t检验结果显著（p=0.022），女性平均成瘾指数2.90高于男性2.58。美妆/穿搭类内容对女性用户吸引力更强可能是原因之一。
+      </div>
+      <div class="conclusion-item">
+        <strong>核心发现 03 · 算法依赖程度普遍偏高</strong>
+        全体均值3.62/5，受访者倾向于被动接受算法推荐，主动搜索占比低，信息茧房效应显著。
+      </div>
+      <div class="conclusion-item">
+        <strong>核心发现 04 · 成瘾与习得性无助强相关</strong>
+        重度成瘾用户（C群）习得性无助指数高达3.91，显著高于轻度用户（1.79），提示可能存在心理健康共病风险。
+      </div>
+      <div class="conclusion-item">
+        <strong>核心发现 05 · 购买行为高度融合</strong>
+        36.6%的用户最常互动是"购买商品"，短视频已深度整合成为消费决策渠道，电商属性显著。
+      </div>
+      <div class="conclusion-item">
+        <strong>建议 · 平台与用户双向优化</strong>
+        平台可对使用时长超2小时的用户推送"健康使用提示"；用户层面需培养主动搜索习惯，减少算法被动推送依赖，提升信息获取自主性。
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;font-size:12px;color:#aaa;margin-top:20px;padding:10px">数据来源：短视频用户调研问卷（2026年6月） · 样本量 N=216 · 数据挖掘方法：K-Means聚类、PCA降维、独立样本t检验</div>
+
+</div>
+
+<script>
+const C = {
+  blue: '#378ADD', purple: '#7F77DD', green: '#639922',
+  coral: '#D85A30', amber: '#BA7517', gray: '#888780',
+  blue_l: '#E6F1FB', purple_l: '#EEEDFE', green_l: '#EAF3DE',
+  coral_l: '#FAECE7', amber_l: '#FAEEDA'
+};
+
+const defaultOpts = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.formattedValue } } }
+};
+
+// 1. 性别饼图
+new Chart(document.getElementById('genderChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['男', '女'],
+    datasets: [{ data: [113, 103], backgroundColor: [C.blue, C.purple], borderWidth: 2, borderColor: '#fff' }]
+  },
+  options: { ...defaultOpts, cutout: '60%',
+    plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 12 }, padding: 16 } } }
+  }
+});
+
+// 2. 年龄柱状图
+new Chart(document.getElementById('ageChart'), {
+  type: 'bar',
+  data: {
+    labels: ['18岁以下', '18-22岁', '23-30岁', '31-40岁', '41岁以上'],
+    datasets: [{ data: [13, 59, 50, 51, 43], backgroundColor: [C.blue_l, C.blue, C.purple, C.blue, C.blue_l], borderRadius: 4 }]
+  },
+  options: { ...defaultOpts,
+    scales: { y: { beginAtZero: true, grid: { color: '#f0efe8' }, ticks: { font: { size: 11 } } },
+              x: { grid: { display: false }, ticks: { font: { size: 11 }, maxRotation: 30 } } }
+  }
+});
+
+// 3. 职业饼图
+new Chart(document.getElementById('jobChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['上班族', '自由职业者', '在校学生'],
+    datasets: [{ data: [126, 47, 43], backgroundColor: [C.blue, C.purple, C.green], borderWidth: 2, borderColor: '#fff' }]
+  },
+  options: { ...defaultOpts, cutout: '60%',
+    plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 12 }, padding: 12 } } }
+  }
+});
+
+// 4. 使用时长
+new Chart(document.getElementById('durChart'), {
+  type: 'bar',
+  data: {
+    labels: ['半小时以内', '1-2小时', '2-3小时', '3小时以上'],
+    datasets: [{ data: [50, 93, 45, 28], backgroundColor: [C.green, C.blue, C.amber, C.coral], borderRadius: 4 }]
+  },
+  options: { ...defaultOpts,
+    scales: { y: { beginAtZero: true, grid: { color: '#f0efe8' }, ticks: { font: { size: 11 } } },
+              x: { grid: { display: false }, ticks: { font: { size: 11 }, maxRotation: 20 } } }
+  }
+});
+
+// 5. 使用目的（横向）
+new Chart(document.getElementById('purposeChart'), {
+  type: 'bar',
+  data: {
+    labels: ['获取资讯', '生活教程', '知识类', '社交互动', '休闲娱乐', '发布创作'],
+    datasets: [{ data: [123, 94, 94, 56, 32, 17], backgroundColor: C.purple, borderRadius: 4 }]
+  },
+  options: { ...defaultOpts, indexAxis: 'y',
+    scales: { x: { beginAtZero: true, grid: { color: '#f0efe8' }, ticks: { font: { size: 11 } } },
+              y: { grid: { display: false }, ticks: { font: { size: 12 } } } }
+  }
+});
+
+// 6. 内容偏好
+new Chart(document.getElementById('contentChart'), {
+  type: 'bar',
+  data: {
+    labels: ['美妆/穿搭', '影视类', '知识/科普', '搞笑趣味', '美食类', '购物直播', '颜值类'],
+    datasets: [{ data: [75, 57, 29, 19, 19, 13, 4], backgroundColor: [C.purple, C.blue, C.green, C.amber, C.coral, C.purple, C.gray], borderRadius: 4 }]
+  },
+  options: { ...defaultOpts, indexAxis: 'y',
+    scales: { x: { beginAtZero: true, grid: { color: '#f0efe8' }, ticks: { font: { size: 11 } } },
+              y: { grid: { display: false }, ticks: { font: { size: 12 } } } }
+  }
+});
+
+// 7. 使用场景
+new Chart(document.getElementById('sceneChart'), {
+  type: 'bar',
+  data: {
+    labels: ['居家/宿舍', '睡前时间', '碎片时间', '通勤路上', '其他'],
+    datasets: [{ data: [98, 68, 27, 19, 4], backgroundColor: C.blue, borderRadius: 4 }]
+  },
+  options: { ...defaultOpts, indexAxis: 'y',
+    scales: { x: { beginAtZero: true, grid: { color: '#f0efe8' }, ticks: { font: { size: 11 } } },
+              y: { grid: { display: false }, ticks: { font: { size: 12 } } } }
+  }
+});
+
+// 8. 互动行为
+new Chart(document.getElementById('interactChart'), {
+  type: 'bar',
+  data: {
+    labels: ['购买商品', '看直播', '关注博主', '续火花', '评论', '转发分享', '点赞', '很少互动'],
+    datasets: [{ data: [79, 61, 15, 15, 14, 9, 8, 15], backgroundColor: [C.coral, C.amber, C.blue, C.purple, C.green, C.gray, C.blue, C.gray], borderRadius: 4 }]
+  },
+  options: { ...defaultOpts, indexAxis: 'y',
+    scales: { x: { beginAtZero: true, grid: { color: '#f0efe8' }, ticks: { font: { size: 11 } } },
+              y: { grid: { display: false }, ticks: { font: { size: 12 } } } }
+  }
+});
+
+// 9. PCA散点图
+const pcaRaw = [{"x":2.203,"y":1.443,"c":0},{"x":2.026,"y":1.067,"c":0},{"x":1.324,"y":-0.126,"c":2},{"x":2.144,"y":-0.575,"c":2},{"x":1.543,"y":0.057,"c":2},{"x":0.14,"y":-0.11,"c":1},{"x":2.016,"y":-0.571,"c":2},{"x":1.614,"y":3.633,"c":0},{"x":1.208,"y":0.028,"c":2},{"x":2.065,"y":1.987,"c":0},{"x":1.375,"y":1.582,"c":0},{"x":0.514,"y":0.834,"c":0},{"x":1.701,"y":-0.141,"c":2},{"x":-1.51,"y":-0.174,"c":1},{"x":-1.239,"y":-0.993,"c":1},{"x":-1.801,"y":-0.364,"c":1},{"x":-2.291,"y":-0.105,"c":1},{"x":-1.687,"y":-0.926,"c":1},{"x":-0.175,"y":0.592,"c":1},{"x":1.456,"y":-0.146,"c":2},{"x":-1.397,"y":0.115,"c":1},{"x":-0.613,"y":-0.782,"c":1},{"x":-1.446,"y":0.388,"c":1},{"x":3.09,"y":-0.818,"c":2},{"x":-1.604,"y":0.472,"c":1},{"x":3.204,"y":-0.619,"c":2},{"x":-0.952,"y":0.129,"c":1},{"x":1.85,"y":0.488,"c":2},{"x":-1.551,"y":-0.628,"c":1},{"x":2.358,"y":-1.292,"c":2},{"x":1.003,"y":0.96,"c":0},{"x":-0.79,"y":-0.887,"c":1},{"x":3.054,"y":-1.909,"c":2},{"x":0.606,"y":0.654,"c":0},{"x":2.695,"y":-1.467,"c":2},{"x":-0.538,"y":0.952,"c":1},{"x":-0.158,"y":2.017,"c":0},{"x":3.556,"y":0.042,"c":2},{"x":-1.752,"y":-0.637,"c":1},{"x":2.105,"y":-0.309,"c":2},{"x":3.11,"y":0.018,"c":2},{"x":-2.155,"y":-0.559,"c":1},{"x":2.977,"y":-0.346,"c":2},{"x":0.648,"y":1.371,"c":0},{"x":-1.326,"y":-1.083,"c":1},{"x":2.889,"y":-0.451,"c":2},{"x":0.162,"y":0.278,"c":0},{"x":1.522,"y":1.244,"c":0},{"x":-2.242,"y":-0.649,"c":1},{"x":2.978,"y":-0.722,"c":2},{"x":3.692,"y":0.235,"c":2},{"x":1.971,"y":-0.198,"c":2},{"x":0.54,"y":-0.366,"c":0},{"x":3.103,"y":-2.453,"c":2},{"x":-1.142,"y":1.774,"c":1},{"x":0.903,"y":-1.478,"c":2},{"x":2.865,"y":0.284,"c":2},{"x":-0.903,"y":-0.415,"c":1},{"x":2.47,"y":-1.388,"c":2},{"x":-0.154,"y":0.047,"c":0},{"x":2.997,"y":0.385,"c":2},{"x":1.976,"y":1.987,"c":0},{"x":2.26,"y":0.058,"c":2},{"x":-2.492,"y":-0.122,"c":1},{"x":-0.552,"y":-0.022,"c":0},{"x":2.622,"y":-0.451,"c":2},{"x":-1.606,"y":0.824,"c":1},{"x":0.245,"y":-2.683,"c":2},{"x":-1.084,"y":-0.611,"c":1},{"x":-0.023,"y":1.548,"c":0},{"x":2.892,"y":-0.631,"c":2},{"x":-0.946,"y":-0.779,"c":1},{"x":1.002,"y":1.312,"c":0},{"x":3.188,"y":-1.521,"c":2},{"x":-1.473,"y":0.926,"c":1},{"x":0.7,"y":-0.796,"c":2},{"x":2.311,"y":-1.214,"c":2},{"x":2.756,"y":-0.063,"c":2},{"x":1.322,"y":0.227,"c":0},{"x":-1.176,"y":-0.055,"c":1},{"x":1.286,"y":1.591,"c":0},{"x":-1.486,"y":-0.532,"c":1},{"x":2.539,"y":-1.088,"c":2},{"x":-1.789,"y":1.741,"c":1},{"x":0.677,"y":0.104,"c":0},{"x":-0.495,"y":1.054,"c":1},{"x":0.808,"y":-0.089,"c":0},{"x":2.869,"y":-0.272,"c":2},{"x":2.292,"y":-0.628,"c":2},{"x":1.51,"y":-1.351,"c":2},{"x":-1.219,"y":-0.532,"c":1},{"x":3.218,"y":0.216,"c":2},{"x":-1.892,"y":0.259,"c":1},{"x":-0.305,"y":-0.22,"c":0},{"x":-1.156,"y":0.292,"c":1},{"x":3.615,"y":-2.071,"c":2},{"x":3.712,"y":0.048,"c":2},{"x":0.567,"y":-0.642,"c":0},{"x":-1.016,"y":-0.334,"c":1},{"x":0.624,"y":0.557,"c":0},{"x":2.534,"y":-0.179,"c":2},{"x":-0.574,"y":-0.148,"c":1},{"x":-1.583,"y":0.842,"c":1},{"x":1.057,"y":0.408,"c":0},{"x":-2.066,"y":-0.183,"c":1},{"x":1.291,"y":1.706,"c":0},{"x":-1.444,"y":-0.078,"c":1},{"x":-0.04,"y":0.36,"c":0},{"x":-1.513,"y":0.277,"c":1},{"x":1.313,"y":1.691,"c":0},{"x":0.054,"y":0.089,"c":0},{"x":-1.269,"y":1.139,"c":1},{"x":0.339,"y":-0.002,"c":1},{"x":-1.172,"y":-0.724,"c":1},{"x":1.403,"y":2.09,"c":0},{"x":-1.559,"y":0.37,"c":1},{"x":0.91,"y":2.53,"c":0},{"x":-0.406,"y":-1.139,"c":1},{"x":-1.48,"y":-1.817,"c":1},{"x":2.179,"y":1.915,"c":0},{"x":-0.801,"y":0.405,"c":1},{"x":-0.094,"y":1.442,"c":0},{"x":-1.502,"y":-1.164,"c":1},{"x":0.659,"y":-0.708,"c":0},{"x":-1.174,"y":-0.258,"c":1},{"x":0.011,"y":0.387,"c":0},{"x":-1.852,"y":0.908,"c":1},{"x":0.92,"y":0.576,"c":0},{"x":-1.225,"y":0.752,"c":1},{"x":-1.311,"y":-0.466,"c":1},{"x":1.388,"y":-0.552,"c":2},{"x":-1.241,"y":-0.264,"c":1},{"x":1.295,"y":-0.258,"c":2},{"x":-0.776,"y":0.595,"c":1},{"x":-0.906,"y":-0.882,"c":1},{"x":0.741,"y":-0.086,"c":0},{"x":-1.497,"y":1.284,"c":1},{"x":1.094,"y":0.861,"c":0},{"x":-1.662,"y":-0.727,"c":1},{"x":0.948,"y":-0.705,"c":0},{"x":-2.247,"y":-0.117,"c":1},{"x":0.646,"y":-0.224,"c":0},{"x":-1.374,"y":-0.628,"c":1},{"x":0.355,"y":-1.823,"c":2},{"x":-1.602,"y":0.382,"c":1},{"x":2.189,"y":0.346,"c":2},{"x":-1.618,"y":-0.363,"c":1},{"x":1.153,"y":-1.515,"c":2},{"x":-1.577,"y":-0.18,"c":1},{"x":0.553,"y":-1.363,"c":2},{"x":-2.336,"y":-0.493,"c":1},{"x":-2.149,"y":-1.205,"c":1},{"x":0.879,"y":-0.516,"c":0},{"x":-1.839,"y":-1.103,"c":1},{"x":1.121,"y":3.04,"c":0},{"x":-1.662,"y":-0.727,"c":1},{"x":1.579,"y":-2.336,"c":2},{"x":-1.355,"y":-0.078,"c":1},{"x":0.423,"y":0.915,"c":0},{"x":-0.505,"y":0.415,"c":1},{"x":-1.691,"y":0.006,"c":1},{"x":1.094,"y":0.861,"c":0},{"x":0.74,"y":0.281,"c":0},{"x":-0.723,"y":-0.881,"c":1},{"x":1.085,"y":-0.122,"c":0},{"x":-1.176,"y":-0.055,"c":1},{"x":-1.337,"y":0.472,"c":1},{"x":-0.297,"y":2.66,"c":0},{"x":-1.42,"y":0.097,"c":1},{"x":1.854,"y":0.045,"c":2},{"x":-0.165,"y":-1.224,"c":1},{"x":-1.551,"y":-0.742,"c":1},{"x":0.949,"y":-1.075,"c":2},{"x":-1.158,"y":0.758,"c":1},{"x":0.241,"y":-2.398,"c":2},{"x":-1.683,"y":-1.106,"c":1},{"x":0.879,"y":0.131,"c":0},{"x":-1.794,"y":-1.467,"c":1},{"x":-0.419,"y":0.619,"c":1},{"x":-1.328,"y":-0.993,"c":1},{"x":-1.584,"y":0.818,"c":1},{"x":-1.687,"y":-0.279,"c":1},{"x":-0.902,"y":-0.791,"c":1},{"x":-2.2,"y":-0.571,"c":1},{"x":-1.381,"y":0.484,"c":1},{"x":-1.618,"y":-0.363,"c":1},{"x":-1.87,"y":-0.018,"c":1},{"x":-0.639,"y":0.027,"c":1},{"x":-1.716,"y":0.454,"c":1},{"x":-1.49,"y":0.286,"c":1},{"x":-2.155,"y":-0.559,"c":1},{"x":-1.938,"y":0.737,"c":1},{"x":-1.005,"y":1.101,"c":1},{"x":-1.388,"y":1.482,"c":1},{"x":-1.245,"y":0.668,"c":1},{"x":-1.594,"y":-1.097,"c":1},{"x":-1.075,"y":1.508,"c":1},{"x":-1.749,"y":-0.817,"c":1},{"x":-0.89,"y":0.668,"c":1},{"x":-1.307,"y":-0.623,"c":1},{"x":-1.725,"y":-1.175,"c":1},{"x":-0.546,"y":-0.144,"c":1},{"x":-1.646,"y":-0.096,"c":1},{"x":-1.399,"y":-0.18,"c":1},{"x":-1.288,"y":0.199,"c":1},{"x":-2.182,"y":-0.021,"c":1},{"x":-1.551,"y":-0.628,"c":1},{"x":-1.308,"y":-0.532,"c":1},{"x":-1.779,"y":-0.099,"c":1},{"x":-1.508,"y":0.121,"c":1},{"x":-1.004,"y":1.229,"c":1},{"x":-1.421,"y":0.473,"c":1},{"x":-1.577,"y":-0.442,"c":1},{"x":-1.778,"y":-0.46,"c":1},{"x":-1.387,"y":1.392,"c":1},{"x":1.28,"y":3.245,"c":0}];
+
+const colorMap = {0: C.blue, 1: C.green, 2: C.coral};
+const labelMap = {0: '群体B 中度依赖', 1: '群体A 轻度理性', 2: '群体C 重度成瘾'};
+const datasets = [0,1,2].map(c => ({
+  label: labelMap[c],
+  data: pcaRaw.filter(p=>p.c===c).map(p=>({x:p.x,y:p.y})),
+  backgroundColor: colorMap[c]+'99',
+  pointRadius: 5, pointHoverRadius: 7
+}));
+
+new Chart(document.getElementById('pcaChart'), {
+  type: 'scatter',
+  data: { datasets },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11 }, padding: 10 } } },
+    scales: {
+      x: { title: { display: true, text: 'PC1 (55.2%)', font: { size: 11 } }, grid: { color: '#f0efe8' }, ticks: { font: { size: 10 } } },
+      y: { title: { display: true, text: 'PC2 (20.6%)', font: { size: 11 } }, grid: { color: '#f0efe8' }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+// 10. 雷达图
+new Chart(document.getElementById('radarChart'), {
+  type: 'radar',
+  data: {
+    labels: ['使用时长', '成瘾指数', '自控力', '习得性无助', '算法依赖'],
+    datasets: [
+      { label: '群体A 轻度理性', data: [1.79, 1.84, 3.05, 1.79, 4.08], borderColor: C.green, backgroundColor: C.green+'33', pointBackgroundColor: C.green, borderWidth: 2 },
+      { label: '群体B 中度依赖', data: [2.32, 3.54, 3.56, 3.37, 3.72], borderColor: C.blue, backgroundColor: C.blue+'33', pointBackgroundColor: C.blue, borderWidth: 2 },
+      { label: '群体C 重度成瘾', data: [3.13, 3.92, 2.79, 3.91, 2.51], borderColor: C.coral, backgroundColor: C.coral+'33', pointBackgroundColor: C.coral, borderWidth: 2 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11 }, padding: 10 } } },
+    scales: { r: { beginAtZero: true, max: 5, min: 1, ticks: { font: { size: 10 }, stepSize: 1 }, grid: { color: '#e8e6de' }, pointLabels: { font: { size: 11 } } } }
+  }
+});
+
+// 11. 使用时长×成瘾/无助折线
+new Chart(document.getElementById('durAddict'), {
+  type: 'line',
+  data: {
+    labels: ['半小时以内', '1-2小时', '2-3小时', '3小时以上'],
+    datasets: [
+      { label: '成瘾指数', data: [2.31, 2.31, 3.49, 3.69], borderColor: C.coral, backgroundColor: C.coral+'22', tension: 0.4, borderWidth: 2.5, pointRadius: 5 },
+      { label: '习得性无助', data: [2.26, 2.20, 3.48, 3.61], borderColor: C.purple, backgroundColor: C.purple+'22', tension: 0.4, borderWidth: 2.5, pointRadius: 5 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11 }, padding: 12 } } },
+    scales: { y: { min: 1, max: 5, grid: { color: '#f0efe8' }, ticks: { font: { size: 11 } } },
+              x: { grid: { display: false }, ticks: { font: { size: 11 } } } }
+  }
+});
+
+// 12. 量表均值条形图
+new Chart(document.getElementById('scaleBar'), {
+  type: 'bar',
+  data: {
+    labels: ['成瘾倾向', '自控力', '习得性无助', '算法依赖'],
+    datasets: [{ data: [2.73, 3.11, 2.66, 3.62], backgroundColor: [C.coral, C.green, C.purple, C.blue], borderRadius: 6 }]
+  },
+  options: { ...defaultOpts,
+    scales: { y: { min: 1, max: 5, grid: { color: '#f0efe8' }, ticks: { font: { size: 11 } } },
+              x: { grid: { display: false }, ticks: { font: { size: 12 } } } }
+  }
+});
+</script>
+</body>
+</html>

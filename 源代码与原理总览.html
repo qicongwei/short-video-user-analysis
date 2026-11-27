@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>源代码 & 可视化 & 原理 — 短视频用户使用习惯分析</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:14px;line-height:1.6}
+  .wrap{max-width:1100px;margin:0 auto;padding:32px 24px}
+
+  /* 封面 */
+  .cover{background:#fff;border-radius:16px;padding:40px;margin-bottom:24px;border:0.5px solid #e0ddd5;position:relative;overflow:hidden}
+  .cover-badge{display:inline-block;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  .cover h1{font-size:24px;font-weight:500;line-height:1.3;margin-bottom:8px}
+  .cover-sub{font-size:13px;color:#888;margin-bottom:20px}
+  .cover-stripe{position:absolute;right:0;top:0;width:180px;height:100%;background:linear-gradient(135deg,#E6F1FB,#EEEDFE);opacity:0.35;clip-path:polygon(60% 0,100% 0,100% 100%,0% 100%)}
+
+  /* 导航 */
+  .toc{background:#fff;border-radius:12px;border:0.5px solid #e0ddd5;padding:20px 24px;margin-bottom:24px;display:flex;gap:32px;flex-wrap:wrap}
+  .toc-group{min-width:200px}
+  .toc-group-title{font-size:12px;font-weight:500;color:#999;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+  .toc-group a{display:block;font-size:13px;color:#185FA5;text-decoration:none;padding:3px 0}
+  .toc-group a:hover{text-decoration:underline}
+
+  /* 区块 */
+  .section{background:#fff;border-radius:14px;border:0.5px solid #e0ddd5;padding:24px 28px;margin-bottom:18px}
+  .section-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:0.5px solid #eeede8}
+  .section-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0}
+  .n-blue{background:#E6F1FB;color:#185FA5}
+  .n-purple{background:#EEEDFE;color:#534AB7}
+  .n-green{background:#EAF3DE;color:#3B6D11}
+  .n-coral{background:#FAECE7;color:#993C1D}
+  .section-title{font-size:16px;font-weight:500}
+
+  /* 文件列表 */
+  .file-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .file-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fafaf8;border-radius:8px;font-size:13px}
+  .file-icon{width:20px;text-align:center;flex-shrink:0}
+  .file-name{color:#185FA5;font-weight:500;flex:1}
+  .file-desc{color:#888;font-size:12px}
+
+  /* 图表网格 */
+  .chart-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .chart-card{background:#fafaf8;border-radius:10px;padding:12px;text-align:center;border:0.5px solid #e8e6de}
+  .chart-card img{max-width:100%;max-height:200px;border-radius:6px;object-fit:contain}
+  .chart-label{font-size:12px;color:#555;margin-top:6px;font-weight:500}
+  .chart-module{font-size:10px;color:#999}
+
+  /* 代码块 */
+  pre{background:#f5f5f0;border-radius:8px;padding:14px 16px;overflow-x:auto;font-size:12px;line-height:1.5;border:0.5px solid #e0ddd5;margin:10px 0}
+  code{font-family:'Cascadia Code','Fira Code',Consolas,monospace}
+
+  /* 知识点标注 */
+  .key-point{background:#FFF9E6;border-left:3px solid #BA7517;border-radius:0 8px 8px 0;padding:10px 14px;margin:10px 0;font-size:13px}
+  .key-point strong{color:#854F0B}
+
+  /* 原理卡片 */
+  .principle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .principle-card{background:#fafaf8;border-radius:10px;padding:16px;border:0.5px solid #e8e6de}
+  .principle-card h4{font-size:14px;font-weight:500;margin-bottom:6px;color:#185FA5}
+  .principle-card .formula{font-size:13px;color:#666;font-style:italic;margin:6px 0}
+  .principle-card .desc{font-size:12px;color:#555;line-height:1.6}
+
+  /* 响应式 */
+  @media(max-width:700px){
+    .file-list,.principle-grid{grid-template-columns:1fr}
+    .toc{flex-direction:column;gap:16px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 封面 -->
+  <div class="cover">
+    <div class="cover-stripe"></div>
+    <div class="cover-badge">数据挖掘课程作品 · 附录</div>
+    <h1>源代码 · 可视化图表 · 方法原理</h1>
+    <p class="cover-sub">短视频 App 用户使用习惯分析 — 完整技术实现与原理说明</p>
+  </div>
+
+  <!-- 导航 -->
+  <div class="toc">
+    <div class="toc-group">
+      <div class="toc-group-title">源代码</div>
+      <a href="#src-config">config.py — 共享配置</a>
+      <a href="#src-m01">module_01 — 基础画像</a>
+      <a href="#src-m02">module_02 — 内容偏好</a>
+      <a href="#src-m03">module_03 — 聚类分群</a>
+      <a href="#src-m04">module_04 — 成瘾心理</a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-title">可视化图表</div>
+      <a href="#charts-all">全部 13 张 PNG 图表</a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-title">方法原理</div>
+      <a href="#principle-scaler">StandardScaler 标准化</a>
+      <a href="#principle-kmeans">K-Means 聚类</a>
+      <a href="#principle-pca">PCA 降维</a>
+      <a href="#principle-ttest">t 检验</a>
+      <a href="#principle-multi">多选拆分</a>
+    </div>
+  </div>
+
+  <!-- ==================== 源代码 ==================== -->
+  <div class="section" id="src-config">
+    <div class="section-header">
+      <div class="section-num n-blue">C</div>
+      <div class="section-title">config.py — 共享配置文件</div>
+    </div>
+    <p style="font-size:13px;color:#666;margin-bottom:12px">
+      定义数据路径、列名映射、Likert 量表映射等全局常量。所有分析模块均从此文件导入配置，确保数据口径一致。
+    </p>
+    <div class="file-list">
+      <div class="file-item"><span class="file-icon">📄</span><span class="file-name">config.py</span><span class="file-desc">路径、列名、量表映射、颜色方案</span></div>
+    </div>
+<pre><code># Likert 量表映射
+LIKERT_MAP = {'很不符合': 1, '不符合': 2, '一般': 3, '符合': 4, '很符合': 5}
+
+# 使用时长数值映射
+DURATION_MAP = {'A.半小时以内': 1, 'B.1-2小时': 2, 'C.2-3小时': 3, 'D.3小时以上': 4}
+
+# 成瘾量表 (Q11-Q18) — 8道题
+ADDICTION_COLS = [
+    '22、...—Q11. 刷短视频时间总比预期长',
+    '22、Q12. 刷短视频时感觉时间在加速',
+    ...  # 共8题
+]
+
+# 算法依赖量表 (Q8-Q10) — 3道题（含 Unicode 引号列名处理）
+ALGO_COLS = [
+    '21、...—Q8. 平台推荐的内容比我主动搜索的更\u201c对味\u201d',
+    ...</code></pre>
+  </div>
+
+  <div class="section" id="src-m01">
+    <div class="section-header">
+      <div class="section-num n-blue">01</div>
+      <div class="section-title">module_01_basic_profile.py — 用户基础画像</div>
+    </div>
+    <p style="font-size:13px;color:#666;margin-bottom:12px">
+      分析性别、年龄、职业、日均使用时长四个基础维度的分布，生成 4 张 PNG 图表。
+    </p>
+    <div class="file-list">
+      <div class="file-item"><span class="file-icon">📄</span><span class="file-name">module_01_basic_profile.py</span><span class="file-desc">描述性统计 + 饼图/柱状图</span></div>
+    </div>
+    <div class="key-point">
+      <strong>⭐ 核心技术：</strong>pandas <code>value_counts()</code> 频数统计、matplotlib 饼图（doughnut）与柱状图（bar）绘制、中文字体配置
+    </div>
+<pre><code># 性别分布
+gender_counts = df['1、您的性别？'].value_counts()
+male = gender_counts.get('B.男', 0)    # 注意：B=男, A=女
+female = gender_counts.get('A.女', 0)
+
+# 饼图
+ax.pie([male, female], labels=['男', '女'],
+       colors=[COLORS['blue'], COLORS['purple']],
+       autopct='%1.1f%%', wedgeprops={'width': 0.4})  # 环形图</code></pre>
+  </div>
+
+  <div class="section" id="src-m02">
+    <div class="section-header">
+      <div class="section-num n-purple">02</div>
+      <div class="section-title">module_02_content_behavior.py — 内容偏好与行为</div>
+    </div>
+    <p style="font-size:13px;color:#666;margin-bottom:12px">
+      对四个多选题（使用目的、内容偏好、使用场景、互动行为）进行拆分编码统计，生成 4 张横向柱状图。
+    </p>
+    <div class="file-list">
+      <div class="file-item"><span class="file-icon">📄</span><span class="file-name">module_02_content_behavior.py</span><span class="file-desc">多选题拆分 + 横向柱状图</span></div>
+    </div>
+    <div class="key-point">
+      <strong>⭐ 核心技术：</strong>多选题拆分编码 —— 将 <code>"A.选项1┋B.选项2"</code> 按分隔符拆开，统计每个独立选项被选中的总人次
+    </div>
+<pre><code>def expand_multi_choice(series, sep='┋'):
+    """多选题拆分编码"""
+    all_choices = []
+    for val in series.dropna():
+        parts = str(val).split(sep)
+        all_choices.extend([p.strip() for p in parts if p.strip()])
+    return pd.Series(all_choices).value_counts()
+
+# 使用
+purpose_counts = expand_multi_choice(df['7、您使用短视频应用的主要目的是？'])</code></pre>
+  </div>
+
+  <div class="section" id="src-m03">
+    <div class="section-header">
+      <div class="section-num n-green">03</div>
+      <div class="section-title">module_03_clustering.py — 用户分群（K-Means + PCA）</div>
+    </div>
+    <p style="font-size:13px;color:#666;margin-bottom:12px">
+      构建5维特征矩阵 → StandardScaler 标准化 → K-Means 聚类（K=3）→ PCA 降维 → 散点图 + 雷达图。生成 2 张 PNG 图表。
+    </p>
+    <div class="file-list">
+      <div class="file-item"><span class="file-icon">📄</span><span class="file-name">module_03_clustering.py</span><span class="file-desc">聚类 + 降维 + 可视化</span></div>
+    </div>
+    <div class="key-point">
+      <strong>⭐ 核心技术：</strong>StandardScaler 消除量纲差异、K-Means 无监督聚类、PCA 主成分分析降维、雷达图多维对比
+    </div>
+<pre><code># 特征矩阵（5个维度）
+feature_cols = ['duration_num', 'addiction_score', 'selfctrl_score',
+                'helpless_score', 'algo_score']
+X = df[feature_cols].values
+
+# 标准化
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# K-Means 聚类
+kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+df['cluster'] = kmeans.fit_predict(X_scaled)
+
+# PCA 降维
+pca = PCA(n_components=2, random_state=42)
+X_pca = pca.fit_transform(X_scaled)
+# PC1: 70.0%, PC2: 13.2%, 累计: 83.2%</code></pre>
+  </div>
+
+  <div class="section" id="src-m04">
+    <div class="section-header">
+      <div class="section-num n-coral">04</div>
+      <div class="section-title">module_04_addiction_psychology.py — 成瘾与心理因素</div>
+    </div>
+    <p style="font-size:13px;color:#666;margin-bottom:12px">
+      成瘾量表逐题分析、四大量表对比、使用时长趋势、独立样本 t 检验（性别差异）。生成 3 张 PNG 图表。
+    </p>
+    <div class="file-list">
+      <div class="file-item"><span class="file-icon">📄</span><span class="file-name">module_04_addiction_psychology.py</span><span class="file-desc">量表分析 + t检验 + 趋势图</span></div>
+    </div>
+    <div class="key-point">
+      <strong>⭐ 核心技术：</strong>Likert 量表反向题处理、scipy.stats.ttest_ind 独立样本 t 检验、groupby 分组聚合分析
+    </div>
+<pre><code># t 检验
+from scipy import stats
+male_scores = df[df['1、您的性别？'] == 'B.男']['addiction_score']
+female_scores = df[df['1、您的性别？'] == 'A.女']['addiction_score']
+t_stat, p_value = stats.ttest_ind(male_scores, female_scores)
+# 结果：t=-2.306, p=0.022 → 女性成瘾倾向显著高于男性
+
+# 反向题处理
+if 'Q21' in col or 'Q22' in col:
+    s = 6 - s  # 反转计分：1→5, 2→4, 3→3, 4→2, 5→1</code></pre>
+  </div>
+
+  <!-- ==================== 可视化图表 ==================== -->
+  <div class="section" id="charts-all">
+    <div class="section-header">
+      <div class="section-num n-purple">📊</div>
+      <div class="section-title">全部可视化图表（13 张 PNG）</div>
+    </div>
+    <p style="font-size:13px;color:#666;margin-bottom:16px">
+      所有图表由 Python + matplotlib 生成，保存于 <code>charts/</code> 目录。点击可查看大图。
+    </p>
+
+    <div style="font-size:13px;font-weight:500;color:#555;margin-bottom:10px">模块 01 · 用户基础画像（4张）</div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <img src="../charts/01_gender.png" alt="性别分布" loading="lazy">
+        <div class="chart-label">性别分布</div>
+        <div class="chart-module">环形图 · 模块01</div>
+      </div>
+      <div class="chart-card">
+        <img src="../charts/01_age.png" alt="年龄分布" loading="lazy">
+        <div class="chart-label">年龄分布</div>
+        <div class="chart-module">柱状图 · 模块01</div>
+      </div>
+      <div class="chart-card">
+        <img src="../charts/01_job.png" alt="职业构成" loading="lazy">
+        <div class="chart-label">职业构成</div>
+        <div class="chart-module">环形图 · 模块01</div>
+      </div>
+      <div class="chart-card">
+        <img src="../charts/01_duration.png" alt="使用时长" loading="lazy">
+        <div class="chart-label">日均使用时长</div>
+        <div class="chart-module">柱状图 · 模块01</div>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:500;color:#555;margin:20px 0 10px">模块 02 · 内容偏好与行为（4张）</div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <img src="../charts/02_purpose.png" alt="使用目的" loading="lazy">
+        <div class="chart-label">使用目的分布</div>
+        <div class="chart-module">横向柱状图 · 模块02</div>
+      </div>
+      <div class="chart-card">
+        <img src="../charts/02_content.png" alt="内容偏好" loading="lazy">
+        <div class="chart-label">内容偏好类型</div>
+        <div class="chart-module">横向柱状图 · 模块02</div>
+      </div>
+      <div class="chart-card">
+        <img src="../charts/02_scene.png" alt="使用场景" loading="lazy">
+        <div class="chart-label">使用场景分布</div>
+        <div class="chart-module">横向柱状图 · 模块02</div>
+      </div>
+      <div class="chart-card">
+        <img src="../charts/02_interact.png" alt="互动行为" loading="lazy">
+        <div class="chart-label">互动行为分布</div>
+        <div class="chart-module">横向柱状图 · 模块02</div>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:500;color:#555;margin:20px 0 10px">模块 03 · 用户分群分析（2张）</div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <img src="../charts/03_pca_scatter.png" alt="PCA散点图" loading="lazy">
+        <div class="chart-label">PCA 二维散点图</div>
+        <div class="chart-module">散点图 · 模块03</div>
+      </div>
+      <div class="chart-card">
+        <img src="../charts/03_radar.png" alt="雷达图" loading="lazy">
+        <div class="chart-label">三群体雷达图</div>
+        <div class="chart-module">雷达图 · 模块03</div>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:500;color:#555;margin:20px 0 10px">模块 04 · 成瘾与心理因素（3张）</div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <img src="../charts/04_addiction_items.png" alt="成瘾量表" loading="lazy">
+        <div class="chart-label">成瘾量表各题均值</div>
+        <div class="chart-module">水平条形图 · 模块04</div>
+      </div>
+      <div class="chart-card">
+        <img src="../charts/04_scale_comparison.png" alt="量表对比" loading="lazy">
+        <div class="chart-label">四大量表均值对比</div>
+        <div class="chart-module">柱状图 · 模块04</div>
+      </div>
+      <div class="chart-card">
+        <img src="../charts/04_duration_trend.png" alt="时长趋势" loading="lazy">
+        <div class="chart-label">使用时长 × 心理指数</div>
+        <div class="chart-module">折线图 · 模块04</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 方法原理 ==================== -->
+  <div class="section" id="principle-scaler">
+    <div class="section-header">
+      <div class="section-num n-blue">①</div>
+      <div class="section-title">StandardScaler — 数据标准化</div>
+    </div>
+    <div class="principle-grid">
+      <div class="principle-card">
+        <h4>为什么需要标准化？</h4>
+        <div class="desc">K-Means 基于欧氏距离计算相似度。如果各特征量纲不同（如"使用时长"1-4 vs "成瘾指数"1-5），量纲大的特征会主导聚类结果。</div>
+      </div>
+      <div class="principle-card">
+        <h4>数学公式</h4>
+        <div class="formula">z = (x - μ) / σ</div>
+        <div class="desc">将每个特征转换为均值=0、标准差=1 的标准正态分布。μ 为均值，σ 为标准差，z 为 Z-score。</div>
+      </div>
+      <div class="principle-card">
+        <h4>⭐ 重要知识点</h4>
+        <div class="desc">
+          1. 标准化 ≠ 归一化（Min-Max）<br>
+          2. 必须用训练集的 μ 和 σ，避免数据泄露<br>
+          3. 标准化后均值为0不代表所有值为0
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="principle-kmeans">
+    <div class="section-header">
+      <div class="section-num n-green">②</div>
+      <div class="section-title">K-Means 聚类算法</div>
+    </div>
+    <div class="principle-grid">
+      <div class="principle-card">
+        <h4>核心思想</h4>
+        <div class="desc">无监督学习，将 N 个样本划分到 K 个簇，使<strong>簇内相似、簇间不同</strong>。最小化簇内平方和（Inertia）。</div>
+      </div>
+      <div class="principle-card">
+        <h4>算法步骤</h4>
+        <div class="desc">
+          1. 随机选 K 个初始中心<br>
+          2. 分配：每个样本归入最近中心<br>
+          3. 更新：重新计算各簇均值作为新中心<br>
+          4. 重复 2-3 直到收敛
+        </div>
+      </div>
+      <div class="principle-card">
+        <h4>⭐ 重要知识点</h4>
+        <div class="desc">
+          1. K 值由肘部法则确定<br>
+          2. 对初始中心敏感（n_init=10 多次运行）<br>
+          3. 只适用于球形簇<br>
+          4. 对异常值敏感
+        </div>
+      </div>
+    </div>
+    <div class="key-point">
+      <strong>本项目结果：</strong>K=3，群体A（轻度理性）114人 | 群体B（中度依赖）50人 | 群体C（重度成瘾高风险）52人
+    </div>
+  </div>
+
+  <div class="section" id="principle-pca">
+    <div class="section-header">
+      <div class="section-num n-purple">③</div>
+      <div class="section-title">PCA — 主成分分析降维</div>
+    </div>
+    <div class="principle-grid">
+      <div class="principle-card">
+        <h4>为什么需要 PCA？</h4>
+        <div class="desc">5维特征无法直接在二维平面可视化。PCA 将高维数据投影到低维空间，同时尽可能保留方差信息。</div>
+      </div>
+      <div class="principle-card">
+        <h4>数学原理</h4>
+        <div class="desc">
+          1. 计算协方差矩阵<br>
+          2. 特征值分解 → 特征向量=主成分方向<br>
+          3. 选择前 k 个最大特征值对应的方向<br>
+          4. 投影原始数据
+        </div>
+      </div>
+      <div class="principle-card">
+        <h4>⭐ 重要知识点</h4>
+        <div class="desc">
+          1. 线性变换，只能捕捉线性关系<br>
+          2. 必须先标准化<br>
+          3. 累计方差 > 80% 表示降维效果好<br>
+          4. PCA 保留全局结构，t-SNE 保留局部结构
+        </div>
+      </div>
+    </div>
+    <div class="key-point">
+      <strong>本项目结果：</strong>PC1 解释 70.0% 方差，PC2 解释 13.2%，累计 83.2%
+    </div>
+  </div>
+
+  <div class="section" id="principle-ttest">
+    <div class="section-header">
+      <div class="section-num n-coral">④</div>
+      <div class="section-title">独立样本 t 检验</div>
+    </div>
+    <div class="principle-grid">
+      <div class="principle-card">
+        <h4>什么时候用？</h4>
+        <div class="desc">比较<strong>两组独立样本</strong>的均值是否存在统计学显著差异。本项目用于比较男性和女性的成瘾指数。</div>
+      </div>
+      <div class="principle-card">
+        <h4>假设检验框架</h4>
+        <div class="desc">
+          H₀：μ_男 = μ_女（两组均值相等）<br>
+          H₁：μ_男 ≠ μ_女（两组均值不相等）<br>
+          p &lt; 0.05 → 拒绝 H₀，差异显著
+        </div>
+      </div>
+      <div class="principle-card">
+        <h4>⭐ 重要知识点</h4>
+        <div class="desc">
+          1. p &lt; 0.05 ≠ 差异很大，只表示非偶然<br>
+          2. 大样本下微小差异也可能显著<br>
+          3. 前提：独立、近似正态、方差齐性<br>
+          4. 避免 p-hacking
+        </div>
+      </div>
+    </div>
+    <div class="key-point">
+      <strong>本项目结果：</strong>男 2.58 vs 女 2.90，t=-2.306，<strong>p=0.022 &lt; 0.05</strong> → 女性成瘾倾向显著高于男性
+    </div>
+  </div>
+
+  <div class="section" id="principle-multi">
+    <div class="section-header">
+      <div class="section-num n-blue">⑤</div>
+      <div class="section-title">多选题拆分编码</div>
+    </div>
+    <div class="principle-grid">
+      <div class="principle-card">
+        <h4>问题</h4>
+        <div class="desc">多选题数据以 <code>"A.选项1┋B.选项2"</code> 格式存储在一个单元格中，需拆分为独立选项进行统计。</div>
+      </div>
+      <div class="principle-card">
+        <h4>处理方法</h4>
+        <div class="desc">
+          1. 遍历每行，按分隔符拆分<br>
+          2. 收集所有选项到列表<br>
+          3. value_counts() 统计频次
+        </div>
+      </div>
+      <div class="principle-card">
+        <h4>⭐ 注意</h4>
+        <div class="desc">
+          1. 总人次 > 样本量（一人多选）<br>
+          2. 不同问卷分隔符可能不同<br>
+          3. 需过滤 NaN 值
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 文件清单 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num n-green">📁</div>
+      <div class="section-title">产出文件清单</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="background:#f5f5f0">
+          <th style="padding:8px 12px;text-align:left">目录</th>
+          <th style="padding:8px 12px;text-align:left">文件</th>
+          <th style="padding:8px 12px;text-align:left">说明</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="padding:6px 12px;color:#185FA5;font-weight:500" rowspan="6">source_code/</td><td style="padding:6px 12px">config.py</td><td style="padding:6px 12px;color:#888">共享配置（路径、列名、量表映射）</td></tr>
+        <tr><td style="padding:6px 12px">module_01_basic_profile.py</td><td style="padding:6px 12px;color:#888">用户基础画像分析</td></tr>
+        <tr><td style="padding:6px 12px">module_02_content_behavior.py</td><td style="padding:6px 12px;color:#888">内容偏好与行为分析</td></tr>
+        <tr><td style="padding:6px 12px">module_03_clustering.py</td><td style="padding:6px 12px;color:#888">K-Means 聚类 + PCA 降维</td></tr>
+        <tr><td style="padding:6px 12px">module_04_addiction_psychology.py</td><td style="padding:6px 12px;color:#888">成瘾倾向与心理因素分析</td></tr>
+        <tr><td style="padding:6px 12px">principles.md</td><td style="padding:6px 12px;color:#888">方法原理详细说明文档</td></tr>
+        <tr><td style="padding:6px 12px;color:#185FA5;font-weight:500" rowspan="14">charts/</td><td style="padding:6px 12px">01_gender.png</td><td style="padding:6px 12px;color:#888">性别分布（环形图）</td></tr>
+        <tr><td style="padding:6px 12px">01_age.png</td><td style="padding:6px 12px;color:#888">年龄分布（柱状图）</td></tr>
+        <tr><td style="padding:6px 12px">01_job.png</td><td style="padding:6px 12px;color:#888">职业构成（环形图）</td></tr>
+        <tr><td style="padding:6px 12px">01_duration.png</td><td style="padding:6px 12px;color:#888">使用时长分布（柱状图）</td></tr>
+        <tr><td style="padding:6px 12px">02_purpose.png</td><td style="padding:6px 12px;color:#888">使用目的分布（横向柱状图）</td></tr>
+        <tr><td style="padding:6px 12px">02_content.png</td><td style="padding:6px 12px;color:#888">内容偏好类型（横向柱状图）</td></tr>
+        <tr><td style="padding:6px 12px">02_scene.png</td><td style="padding:6px 12px;color:#888">使用场景分布（横向柱状图）</td></tr>
+        <tr><td style="padding:6px 12px">02_interact.png</td><td style="padding:6px 12px;color:#888">互动行为分布（横向柱状图）</td></tr>
+        <tr><td style="padding:6px 12px">03_pca_scatter.png</td><td style="padding:6px 12px;color:#888">PCA 二维散点图</td></tr>
+        <tr><td style="padding:6px 12px">03_radar.png</td><td style="padding:6px 12px;color:#888">三群体雷达图</td></tr>
+        <tr><td style="padding:6px 12px">04_addiction_items.png</td><td style="padding:6px 12px;color:#888">成瘾量表各题均值</td></tr>
+        <tr><td style="padding:6px 12px">04_scale_comparison.png</td><td style="padding:6px 12px;color:#888">四大量表均值对比</td></tr>
+        <tr><td style="padding:6px 12px">04_duration_trend.png</td><td style="padding:6px 12px;color:#888">使用时长 × 心理指数趋势</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="text-align:center;font-size:12px;color:#aaa;margin-top:20px;padding:10px">
+    数据挖掘课程作品 · 短视频 App 用户使用习惯分析 · 2026年6月
+  </div>
+
+</div>
+</body>
+</html>

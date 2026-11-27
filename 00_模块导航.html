@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>短视频用户使用习惯分析 — 模块导航</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:14px;line-height:1.6;min-height:100vh}
+  .page-wrap{max-width:900px;margin:0 auto;padding:40px 24px}
+
+  /* 封面 */
+  .cover{background:#fff;border-radius:20px;padding:40px 40px 36px;margin-bottom:32px;border:0.5px solid #e0ddd5;position:relative;overflow:hidden}
+  .cover-stripe{position:absolute;right:0;top:0;width:220px;height:100%;background:linear-gradient(135deg,#E6F1FB 0%,#EEEDFE 100%);opacity:0.5;clip-path:polygon(60% 0,100% 0,100% 100%,0% 100%)}
+  .cover-badge{display:inline-block;background:#E6F1FB;color:#185FA5;font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;margin-bottom:14px}
+  .cover h1{font-size:28px;font-weight:500;color:#1a1a1a;line-height:1.3;margin-bottom:8px}
+  .cover-sub{font-size:13px;color:#888;margin-bottom:24px}
+  .cover-stats{display:flex;gap:20px;flex-wrap:wrap}
+  .stat-pill{background:#f5f5f0;border-radius:8px;padding:10px 18px;display:inline-flex;flex-direction:column}
+  .stat-pill .v{font-size:22px;font-weight:500;color:#185FA5}
+  .stat-pill .l{font-size:11px;color:#888;margin-top:1px}
+
+  /* 导航说明 */
+  .nav-intro{font-size:13px;color:#888;margin-bottom:20px;padding-left:4px}
+
+  /* 模块卡片 */
+  .module-list{display:flex;flex-direction:column;gap:14px;margin-bottom:32px}
+  .module-card{background:#fff;border:0.5px solid #e0ddd5;border-radius:14px;padding:20px 24px;display:flex;align-items:center;gap:20px;text-decoration:none;color:#1a1a1a;transition:box-shadow 0.2s,border-color 0.2s,transform 0.15s}
+  .module-card:hover{border-color:#185FA5;box-shadow:0 4px 20px rgba(24,95,165,0.1);transform:translateY(-1px)}
+  .module-card:hover .module-arrow{color:#185FA5}
+  .module-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .mi-blue{background:#E6F1FB}
+  .mi-purple{background:#EEEDFE}
+  .mi-green{background:#EAF3DE}
+  .mi-coral{background:#FAECE7}
+  .mi-gray{background:#f0efe8}
+  .module-info{flex:1}
+  .module-num{font-size:11px;color:#aaa;font-weight:500;margin-bottom:2px;letter-spacing:0.5px}
+  .module-name{font-size:16px;font-weight:500;color:#1a1a1a;margin-bottom:4px}
+  .module-desc{font-size:12px;color:#888;line-height:1.5}
+  .module-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500}
+  .module-arrow{font-size:18px;color:#ccc;flex-shrink:0;font-weight:300}
+
+  /* 底部完整报告 */
+  .full-report{background:linear-gradient(135deg,#185FA5,#534AB7);border-radius:16px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:#fff;margin-bottom:24px;transition:opacity 0.2s}
+  .full-report:hover{opacity:0.92}
+  .full-report-left h3{font-size:16px;font-weight:500;margin-bottom:4px}
+  .full-report-left p{font-size:12px;opacity:0.8}
+  .full-report-btn{background:#fff;color:#185FA5;border-radius:20px;padding:8px 20px;font-size:13px;font-weight:500;white-space:nowrap}
+
+  /* footer */
+  .footer{text-align:center;font-size:12px;color:#bbb;padding:8px}
+
+  @media(max-width:600px){
+    .cover h1{font-size:22px}
+    .cover-stats{flex-wrap:wrap;gap:10px}
+    .module-card{flex-direction:column;align-items:flex-start;gap:12px}
+    .full-report{flex-direction:column;gap:16px}
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- 封面 -->
+  <div class="cover">
+    <div class="cover-stripe"></div>
+    <div class="cover-badge">数据挖掘课程作品</div>
+    <h1>短视频 App 用户<br>使用习惯分析</h1>
+    <p class="cover-sub">基于 216 份问卷的多维度数据挖掘研究 · 2026年6月</p>
+    <div class="cover-stats">
+      <div class="stat-pill"><div class="v">216</div><div class="l">有效答卷</div></div>
+      <div class="stat-pill"><div class="v">54</div><div class="l">变量字段</div></div>
+      <div class="stat-pill"><div class="v">3</div><div class="l">用户群体</div></div>
+      <div class="stat-pill"><div class="v">4</div><div class="l">分析维度</div></div>
+    </div>
+  </div>
+
+  <div class="nav-intro">以下是按分析模块拆分的独立文件，点击可单独查看每个部分：</div>
+
+  <!-- 模块导航 -->
+  <div class="module-list">
+
+    <a href="01_用户基础画像.html" class="module-card">
+      <div class="module-icon mi-blue">👤</div>
+      <div class="module-info">
+        <div class="module-num">MODULE 01</div>
+        <div class="module-name">用户基础画像</div>
+        <div class="module-desc">性别 / 年龄 / 职业 / 日均使用时长的人口统计分析，揭示核心用户圈特征</div>
+        <div class="module-tags">
+          <span class="tag" style="background:#E6F1FB;color:#185FA5">描述统计</span>
+          <span class="tag" style="background:#E6F1FB;color:#185FA5">频率分布</span>
+          <span class="tag" style="background:#E6F1FB;color:#185FA5">饼图 / 柱状图</span>
+        </div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
+
+    <a href="02_内容偏好与行为.html" class="module-card">
+      <div class="module-icon mi-purple">📱</div>
+      <div class="module-info">
+        <div class="module-num">MODULE 02</div>
+        <div class="module-name">内容偏好与行为分析</div>
+        <div class="module-desc">使用目的 / 内容类型偏好 / 互动行为 / 使用场景 / 平台分布，多选题展开统计</div>
+        <div class="module-tags">
+          <span class="tag" style="background:#EEEDFE;color:#534AB7">多选题分析</span>
+          <span class="tag" style="background:#EEEDFE;color:#534AB7">行为数据</span>
+          <span class="tag" style="background:#EEEDFE;color:#534AB7">横向条形图</span>
+        </div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
+
+    <a href="03_用户分群分析.html" class="module-card">
+      <div class="module-icon mi-green">🔍</div>
+      <div class="module-info">
+        <div class="module-num">MODULE 03</div>
+        <div class="module-name">用户分群分析（K-Means 聚类）</div>
+        <div class="module-desc">基于5维度特征聚类，识别轻度理性、中度依赖、重度成瘾三类用户，PCA降维可视化</div>
+        <div class="module-tags">
+          <span class="tag" style="background:#EAF3DE;color:#3B6D11">K-Means</span>
+          <span class="tag" style="background:#EAF3DE;color:#3B6D11">PCA降维</span>
+          <span class="tag" style="background:#EAF3DE;color:#3B6D11">雷达图</span>
+          <span class="tag" style="background:#EAF3DE;color:#3B6D11">散点图</span>
+        </div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
+
+    <a href="04_成瘾与心理因素.html" class="module-card">
+      <div class="module-icon mi-coral">🧠</div>
+      <div class="module-info">
+        <div class="module-num">MODULE 04</div>
+        <div class="module-name">成瘾倾向与心理因素分析</div>
+        <div class="module-desc">成瘾量表8题项分析 · 独立样本t检验验证性别差异 · 时长与成瘾的相关趋势</div>
+        <div class="module-tags">
+          <span class="tag" style="background:#FAECE7;color:#993C1D">Likert量表</span>
+          <span class="tag" style="background:#FAECE7;color:#993C1D">t检验 p=0.022</span>
+          <span class="tag" style="background:#FAECE7;color:#993C1D">折线图</span>
+        </div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
+
+    <a href="05_分析结论.html" class="module-card">
+      <div class="module-icon mi-gray">📋</div>
+      <div class="module-info">
+        <div class="module-num">MODULE 05</div>
+        <div class="module-name">分析结论与建议</div>
+        <div class="module-desc">5大核心发现的完整阐述 · 使用方法总结 · 针对平台和用户的4条行动建议</div>
+        <div class="module-tags">
+          <span class="tag" style="background:#f0efe8;color:#555">综合结论</span>
+          <span class="tag" style="background:#f0efe8;color:#555">方法汇总</span>
+          <span class="tag" style="background:#f0efe8;color:#555">行动建议</span>
+        </div>
+      </div>
+      <div class="module-arrow">›</div>
+    </a>
+
+  </div>
+
+  <!-- 完整报告入口 -->
+  <a href="短视频用户使用习惯分析报告.html" class="full-report">
+    <div class="full-report-left">
+      <h3>查看完整分析报告</h3>
+      <p>所有模块整合在一个页面 · 包含导航目录 · 适合整体阅读与展示</p>
+    </div>
+    <div class="full-report-btn">打开完整报告 →</div>
+  </a>
+
+  <div class="footer">数据来源：短视频用户调研问卷（2026年6月）· N=216 · 方法：K-Means、PCA、t检验、Likert量表分析</div>
+
+</div>
+</body>
+</html>

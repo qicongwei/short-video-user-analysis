@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>02 内容偏好与行为 — 短视频用户使用习惯分析</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:14px;line-height:1.6}
+  .page-wrap{max-width:1000px;margin:0 auto;padding:32px 24px}
+  .breadcrumb{font-size:12px;color:#999;margin-bottom:20px}
+  .breadcrumb a{color:#185FA5;text-decoration:none}
+  .section-badge{display:inline-flex;align-items:center;gap:8px;margin-bottom:16px}
+  .section-num{width:32px;height:32px;border-radius:50%;background:#EEEDFE;color:#534AB7;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500}
+  .section-title{font-size:22px;font-weight:500;color:#1a1a1a;margin-bottom:6px}
+  .section-desc{font-size:13px;color:#888;margin-bottom:28px}
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+  .chart-full{grid-column:1/-1}
+  .chart-card{background:#fff;border:0.5px solid #e0ddd5;border-radius:12px;padding:20px}
+  .chart-title{font-size:13px;font-weight:500;margin-bottom:3px;color:#333}
+  .chart-subtitle{font-size:12px;color:#999;margin-bottom:14px}
+  .chart-wrap{position:relative}
+  .insight-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+  .insight-card{background:#fff;border-radius:10px;padding:16px;border:0.5px solid #e0ddd5;border-left:3px solid #534AB7}
+  .insight-card.amber{border-left-color:#854F0B}
+  .insight-card.blue{border-left-color:#185FA5}
+  .insight-label{font-size:11px;color:#999;font-weight:500;margin-bottom:4px;letter-spacing:0.5px}
+  .insight-val{font-size:22px;font-weight:500;color:#1a1a1a}
+  .insight-note{font-size:12px;color:#666;margin-top:5px;line-height:1.5}
+  .rank-list{background:#fff;border:0.5px solid #e0ddd5;border-radius:12px;padding:20px;margin-bottom:24px}
+  .rank-list h3{font-size:13px;font-weight:500;color:#333;margin-bottom:14px}
+  .rank-item{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .rank-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+  .r1{background:#534AB7;color:#fff}
+  .r2{background:#7F77DD;color:#fff}
+  .r3{background:#EEEDFE;color:#534AB7}
+  .rn{background:#f0efe8;color:#888}
+  .rank-bar{flex:1;height:22px;background:#f5f5f0;border-radius:4px;overflow:hidden;position:relative}
+  .rank-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11px;color:#fff;font-weight:500}
+  .rank-count{font-size:12px;color:#888;width:40px;text-align:right;flex-shrink:0}
+  .tag-cloud{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .tag{display:inline-block;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500}
+  .nav-footer{margin-top:32px;display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:0.5px solid #e0ddd5}
+  .nav-btn{background:#fff;border:0.5px solid #e0ddd5;border-radius:20px;padding:8px 18px;font-size:13px;color:#444;text-decoration:none}
+  .nav-btn:hover{border-color:#185FA5;color:#185FA5}
+  .nav-btn.next{background:#534AB7;color:#fff;border-color:#534AB7}
+  .nav-btn.next:hover{background:#4039a0}
+  @media(max-width:700px){.chart-grid,.insight-grid{grid-template-columns:1fr}.chart-full{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="breadcrumb">
+    <a href="短视频用户使用习惯分析报告.html">← 返回总报告</a> &nbsp;/&nbsp; 02 内容偏好与行为
+  </div>
+
+  <div class="section-badge">
+    <div class="section-num">02</div>
+    <span style="font-size:12px;color:#534AB7;font-weight:500">内容偏好与行为</span>
+  </div>
+  <div class="section-title">内容偏好与行为分析</div>
+  <div class="section-desc">使用目的、内容类型偏好、互动行为及使用场景四维度分析 · 多选题展开统计</div>
+
+  <!-- 使用目的图表 -->
+  <div class="chart-card" style="margin-bottom:20px">
+    <div class="chart-title">使用目的分布（多选题，n=216）</div>
+    <div class="chart-subtitle">获取资讯与生活教程/知识类并列最主要目的，纯休闲娱乐占比反而不高</div>
+    <div class="chart-wrap" style="height:220px">
+      <canvas id="purposeChart"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title">内容偏好类型（多选）</div>
+      <div class="chart-subtitle">美妆/穿搭居首，影视类紧随，知识内容受众广</div>
+      <div class="chart-wrap" style="height:260px">
+        <canvas id="contentChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">互动行为分布（多选）</div>
+      <div class="chart-subtitle">购买商品是最常见互动，电商属性突出</div>
+      <div class="chart-wrap" style="height:260px">
+        <canvas id="interactChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">使用场景分布（多选）</div>
+      <div class="chart-subtitle">居家/宿舍和睡前是最主要场景</div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="sceneChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card" style="padding:20px">
+      <div class="chart-title">常用平台排行（多选）</div>
+      <div class="chart-subtitle">抖音占绝对主导，多平台并用趋势明显</div>
+      <div style="margin-top:14px">
+        <div class="rank-item">
+          <div class="rank-num r1">1</div>
+          <div class="rank-bar"><div class="rank-fill" style="width:95%;background:#534AB7">抖音</div></div>
+          <div class="rank-count">~200+</div>
+        </div>
+        <div class="rank-item">
+          <div class="rank-num r2">2</div>
+          <div class="rank-bar"><div class="rank-fill" style="width:72%;background:#7F77DD">快手</div></div>
+          <div class="rank-count">~155</div>
+        </div>
+        <div class="rank-item">
+          <div class="rank-num r3">3</div>
+          <div class="rank-bar"><div class="rank-fill" style="width:60%;background:#9590E0">小红书</div></div>
+          <div class="rank-count">~130</div>
+        </div>
+        <div class="rank-item">
+          <div class="rank-num rn">4</div>
+          <div class="rank-bar"><div class="rank-fill" style="width:40%;background:#B0ACE8">微信视频号</div></div>
+          <div class="rank-count">~86</div>
+        </div>
+        <div class="rank-item">
+          <div class="rank-num rn">5</div>
+          <div class="rank-bar"><div class="rank-fill" style="width:25%;background:#c8c5ef">B站</div></div>
+          <div class="rank-count">~54</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;font-size:12px;color:#888">热门组合：抖音+快手+小红书（47人）</div>
+    </div>
+  </div>
+
+  <!-- 洞察 -->
+  <div class="insight-grid">
+    <div class="insight-card">
+      <div class="insight-label">主流使用目的</div>
+      <div class="insight-val">获取资讯</div>
+      <div class="insight-note">123人选择"获取资讯"，超过"休闲娱乐"，用户对短视频的内容价值需求强</div>
+    </div>
+    <div class="insight-card amber">
+      <div class="insight-label">电商互动转化</div>
+      <div class="insight-val">36.6%</div>
+      <div class="insight-note">79人最常互动行为是"购买商品"，远超点赞、评论等传统互动，短视频电商深度融合</div>
+    </div>
+    <div class="insight-card blue">
+      <div class="insight-label">睡前刷短视频</div>
+      <div class="insight-val">31.5% / 68人</div>
+      <div class="insight-note">睡前是第二大场景，与熬夜、成瘾指标高度相关，是干预重点场景</div>
+    </div>
+  </div>
+
+  <!-- 内容偏好标签云 -->
+  <div style="background:#fff;border:0.5px solid #e0ddd5;border-radius:12px;padding:20px">
+    <div style="font-size:13px;font-weight:500;color:#333;margin-bottom:4px">内容偏好标签云</div>
+    <div style="font-size:12px;color:#999;margin-bottom:14px">字体大小反映选择人数多少</div>
+    <div class="tag-cloud">
+      <span class="tag" style="font-size:22px;background:#EEEDFE;color:#534AB7">美妆/穿搭（75）</span>
+      <span class="tag" style="font-size:18px;background:#E6F1FB;color:#185FA5">影视类（57）</span>
+      <span class="tag" style="font-size:15px;background:#EAF3DE;color:#3B6D11">知识/科普（29）</span>
+      <span class="tag" style="font-size:14px;background:#FAEEDA;color:#854F0B">搞笑趣味（19）</span>
+      <span class="tag" style="font-size:14px;background:#FAECE7;color:#993C1D">美食类（19）</span>
+      <span class="tag" style="font-size:13px;background:#EEEDFE;color:#534AB7">购物直播（13）</span>
+      <span class="tag" style="font-size:12px;background:#f0efe8;color:#666">颜值类（4）</span>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a href="01_用户基础画像.html" class="nav-btn">← 01 用户基础画像</a>
+    <a href="03_用户分群分析.html" class="nav-btn next">下一节：用户分群分析 →</a>
+  </div>
+
+</div>
+<script>
+const C = {blue:'#378ADD',purple:'#7F77DD',green:'#639922',coral:'#D85A30',amber:'#BA7517',gray:'#888780',p:'#534AB7'};
+const dOpts = {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.formattedValue+'人'}}}};
+
+new Chart(document.getElementById('purposeChart'),{
+  type:'bar',
+  data:{
+    labels:['获取资讯','生活教程','知识类内容','社交互动','休闲娱乐','发布创作'],
+    datasets:[{data:[123,94,94,56,32,17],backgroundColor:C.p,borderRadius:4}]
+  },
+  options:{...dOpts,indexAxis:'y',
+    scales:{x:{beginAtZero:true,grid:{color:'#f0efe8'},ticks:{font:{size:11}}},
+            y:{grid:{display:false},ticks:{font:{size:12}}}}
+  }
+});
+
+new Chart(document.getElementById('contentChart'),{
+  type:'bar',
+  data:{
+    labels:['美妆/穿搭','影视类','知识/科普','搞笑趣味','美食类','购物直播','颜值类'],
+    datasets:[{data:[75,57,29,19,19,13,4],backgroundColor:[C.p,C.blue,C.green,C.amber,C.coral,C.purple,C.gray],borderRadius:4}]
+  },
+  options:{...dOpts,indexAxis:'y',
+    scales:{x:{beginAtZero:true,grid:{color:'#f0efe8'},ticks:{font:{size:11}}},
+            y:{grid:{display:false},ticks:{font:{size:12}}}}
+  }
+});
+
+new Chart(document.getElementById('interactChart'),{
+  type:'bar',
+  data:{
+    labels:['购买商品','看直播','关注博主','评论','续火花','转发分享','点赞','很少互动'],
+    datasets:[{data:[79,61,15,14,15,9,8,15],backgroundColor:[C.coral,C.amber,C.blue,C.green,C.p,C.gray,C.blue,C.gray],borderRadius:4}]
+  },
+  options:{...dOpts,indexAxis:'y',
+    scales:{x:{beginAtZero:true,grid:{color:'#f0efe8'},ticks:{font:{size:11}}},
+            y:{grid:{display:false},ticks:{font:{size:12}}}}
+  }
+});
+
+new Chart(document.getElementById('sceneChart'),{
+  type:'bar',
+  data:{
+    labels:['居家/宿舍','睡前时间','碎片时间','通勤路上','其他'],
+    datasets:[{data:[98,68,27,19,4],backgroundColor:C.blue,borderRadius:4}]
+  },
+  options:{...dOpts,indexAxis:'y',
+    scales:{x:{beginAtZero:true,grid:{color:'#f0efe8'},ticks:{font:{size:11}}},
+            y:{grid:{display:false},ticks:{font:{size:12}}}}
+  }
+});
+</script>
+</body>
+</html>
